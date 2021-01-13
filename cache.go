@@ -1,0 +1,102 @@
+package gocache
+
+import (
+	"fmt"
+	"log"
+	"time"
+)
+
+var Stores = make(map[string]StoreInterface)
+
+type Cache struct {
+	name  string
+	store StoreInterface
+}
+
+type StoreInterface interface {
+	GetStoreName() string
+	// 获取缓存
+	Get(key string) (interface{}, error)
+	// 获取缓存后删除
+	Pull(key string) (interface{}, error)
+	// 设置缓存带过期时间
+	Set(key string, value interface{}, time time.Duration) error
+	// 设置永久缓存无过期时间
+	Forever(key string, value interface{}) error
+	// 删除key
+	Delete(key string) error
+	// 判断key是否存在
+	Has(key string) error
+	// 全部清空
+	Clear() error
+}
+
+// 获取一个实例
+func New(name string) (*Cache, error) {
+	if store, ok := Stores[name]; ok {
+		return &Cache{
+			name:  name,
+			store: store,
+		}, nil
+	} else {
+		return nil, fmt.Errorf("Cache:unknown %s store please import", name)
+	}
+
+}
+
+// 注册store
+func Register(name string, store StoreInterface) {
+	if store == nil {
+		log.Panic("Cache: Register store is nil")
+	}
+
+	if _, ok := Stores[name]; ok {
+		log.Panic("Cache: Register store is exist")
+	}
+
+	Stores[name] = store
+}
+
+// 获取store名称
+func (c *Cache) GetStoreName() string {
+	return c.store.GetStoreName()
+}
+
+// 获取键值
+func (c *Cache) Get(key string) (interface{}, error) {
+	return c.store.Get(key)
+}
+
+// 获取键值并删除
+func (c *Cache) Pull(key string) (interface{}, error) {
+	return c.store.Pull(key)
+}
+
+// 设置键值以及过期时间
+func (c *Cache) Set(key string, value interface{}, time time.Duration) error {
+	return c.store.Set(key, value, time)
+}
+
+// 永久设置键值不过期
+func (c *Cache) Forever(key string, value interface{}) error {
+	return c.store.Forever(key, value)
+}
+
+// 删除键值
+func (c *Cache) Delete(key string) error {
+	return c.store.Delete(key)
+}
+
+// 判断键是否存在
+func (c *Cache) Has(key string) error {
+	return c.store.Has(key)
+}
+
+// 清除所有键值
+func (c *Cache) Clear() error {
+	return c.store.Clear()
+}
+
+func main() {
+
+}
