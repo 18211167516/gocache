@@ -3,6 +3,7 @@ package gocache
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -17,10 +18,8 @@ type StoreInterface interface {
 	GetStoreName() string
 	// 获取缓存
 	Get(key string) (interface{}, error)
-	// 获取缓存后删除
-	Pull(key string) (interface{}, error)
 	// 设置缓存带过期时间
-	Set(key string, value interface{}, time time.Duration) error
+	Set(key string, value interface{}, time int) error
 	// 设置永久缓存无过期时间
 	Forever(key string, value interface{}) error
 	// 删除key
@@ -29,11 +28,19 @@ type StoreInterface interface {
 	Has(key string) error
 	// 全部清空
 	Clear() error
+	// 获取缓存key的数量
+	Size() int
+	// 获取expire
+	GetTTl(key string) (time.Time, error)
+	// 随机删除已过期key
+	GC()
 }
 
 // 获取一个实例
 func New(name string) (*Cache, error) {
+	name = strings.ToLower(name)
 	if store, ok := Stores[name]; ok {
+		go store.GC()
 		return &Cache{
 			name:  name,
 			store: store,
@@ -49,6 +56,8 @@ func Register(name string, store StoreInterface) {
 	if store == nil {
 		log.Panic("Cache: Register store is nil")
 	}
+
+	name = strings.ToLower(name)
 
 	if _, ok := Stores[name]; ok {
 		log.Panic("Cache: Register store is exist")
@@ -67,13 +76,8 @@ func (c *Cache) Get(key string) (interface{}, error) {
 	return c.store.Get(key)
 }
 
-// 获取键值并删除
-func (c *Cache) Pull(key string) (interface{}, error) {
-	return c.store.Pull(key)
-}
-
 // 设置键值以及过期时间
-func (c *Cache) Set(key string, value interface{}, time time.Duration) error {
+func (c *Cache) Set(key string, value interface{}, time int) error {
 	return c.store.Set(key, value, time)
 }
 
@@ -97,6 +101,10 @@ func (c *Cache) Clear() error {
 	return c.store.Clear()
 }
 
-func main() {
+func (c *Cache) Size() int {
+	return c.store.Size()
+}
 
+func (c *Cache) GetTTl(key string) (time.Time, error) {
+	return c.store.GetTTl(key)
 }
