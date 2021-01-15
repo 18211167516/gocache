@@ -20,13 +20,15 @@ type RedisStore struct {
 
 func NewRedis(addr, password string, db, PoolSize int) *RedisStore {
 
-	Ctx = context.Background()
 	ClientRedis := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password, // no password set
 		DB:       db,       // use default DB
 		PoolSize: PoolSize, // 连接池大小
+		//MinIdleConns: 5,
 	})
+
+	Ctx = ClientRedis.Context()
 
 	err := ClientRedis.Ping(Ctx).Err()
 	if err != nil {
