@@ -21,10 +21,10 @@ type Memory struct {
 	expirat time.Time
 }
 
-var name = "Memory"
+var MemoryName = "Memory"
 
 func init() {
-	gocache.Register(name, NewStore())
+	gocache.Register(MemoryName, NewStore())
 }
 
 func NewStore() *MemoryStore {
@@ -80,7 +80,7 @@ func (ms *MemoryStore) GC() {
 }
 
 func (ms *MemoryStore) GetStoreName() string {
-	return name
+	return MemoryName
 }
 
 func (ms *MemoryStore) Get(key string) (interface{}, error) {
@@ -166,21 +166,20 @@ func (ms *MemoryStore) Size() int {
 	return len(ms.list)
 }
 
-func (ms *MemoryStore) GetTTl(key string) (time.Time, error) {
+func (ms *MemoryStore) GetTTl(key string) (time.Duration, error) {
 	defer ms.mu.RUnlock()
 	ms.mu.RLock()
 	if err := ms.Has(key); err != nil {
-		return time.Time{}, err
+		return time.Duration(0), err
 	} else {
-		return ms.list[key].Value.(*Memory).TTL(key), nil
+		return time.Now().Sub(ms.list[key].Value.(*Memory).TTL(key)), nil
 	}
 }
 
 func (ms *MemoryStore) IsExpire(key string) (bool, error) {
-	expire, err := ms.GetTTl(key)
-	if err != nil {
+	if err := ms.Has(key); err != nil {
 		return false, err
 	}
-
+	expire := ms.list[key].Value.(*Memory).TTL(key)
 	return !expire.IsZero() && time.Now().After(expire), nil
 }

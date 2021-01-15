@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/18211167516/gocache"
-	_ "github.com/18211167516/gocache/store"
+	"github.com/18211167516/gocache/store"
 )
 
 func main() {
-	cache, err := gocache.New("Memory")
+	store.NewAndRegister("192.168.99.100:6379", "", 10, 10)
+	cache, err := gocache.New("redis")
 	if err != nil {
 		log.Fatalf("初始化缓存管理器 失败 %s", err)
 	}

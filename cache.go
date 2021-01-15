@@ -31,7 +31,7 @@ type StoreInterface interface {
 	// 获取缓存key的数量
 	Size() int
 	// 获取expire
-	GetTTl(key string) (time.Time, error)
+	GetTTl(key string) (time.Duration, error)
 	// 随机删除已过期key
 	GC()
 }
@@ -105,6 +105,6 @@ func (c *Cache) Size() int {
 	return c.store.Size()
 }
 
-func (c *Cache) GetTTl(key string) (time.Time, error) {
+func (c *Cache) GetTTl(key string) (time.Duration, error) {
 	return c.store.GetTTl(key)
 }
