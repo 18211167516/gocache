@@ -10,8 +10,9 @@ import (
 )
 
 func main() {
-	store.NewAndRegister("192.168.99.100:6379", "", 10, 10)
-	cache, err := gocache.New("redis")
+	store.RegisterRedis("192.168.99.100:6379", "", 10, 10)
+	store.RegisterMemcached("192.168.99.100:11211")
+	cache, err := gocache.New("memcached")
 	if err != nil {
 		log.Fatalf("初始化缓存管理器 失败 %s", err)
 	}
@@ -19,8 +20,8 @@ func main() {
 	fmt.Println("获取store type:", cache.GetStoreName())
 
 	fmt.Println(time.Now())
-
-	if err := cache.Set("aaaa", "123123", 1); err != nil {
+	fmt.Println("删除全部：", fmt.Sprintln(cache.Clear()))
+	if err := cache.Set("aaaa", "123123", 100); err != nil {
 		log.Fatalf("设置键 %s 的value 失败 %s", "aaaa", err)
 	}
 
@@ -32,7 +33,7 @@ func main() {
 	fmt.Println("获取键值：", fmt.Sprintln(cache.Get("bbb"))) */
 
 	_ = cache.Set("cccc", "cccc", 5)
-	_ = cache.Set("dddd", "dddd", 10)
+	_ = cache.Set("dddd", "dddd", 20)
 	fmt.Println("获取键值：", fmt.Sprintln(cache.Get("cccc")))
 	time.Sleep(time.Duration(5) * time.Second)
 

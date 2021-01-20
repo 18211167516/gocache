@@ -32,7 +32,7 @@ func NewRedis(addr, password string, db, PoolSize int) *RedisStore {
 
 	err := ClientRedis.Ping(Ctx).Err()
 	if err != nil {
-		log.Fatalln("Cache store redis：", err)
+		log.Panic("Cache store redis：", err)
 	}
 
 	return &RedisStore{
@@ -40,7 +40,7 @@ func NewRedis(addr, password string, db, PoolSize int) *RedisStore {
 	}
 }
 
-func NewAndRegister(addr, password string, db, PoolSize int) {
+func RegisterRedis(addr, password string, db, PoolSize int) {
 	gocache.Register(RedisName, NewRedis(addr, password, db, PoolSize))
 }
 
